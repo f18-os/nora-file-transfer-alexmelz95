@@ -23,6 +23,7 @@ lsock.bind(bindAddr)
 lsock.listen(5)
 print("listening on:", bindAddr)
 
+lock = threading.Lock()
 class ServerThread(Thread):
     requestCount = 0            # one instance / class
     def __init__(self, sock, debug):
@@ -30,6 +31,7 @@ class ServerThread(Thread):
         self.fsock, self.debug = FramedStreamSock(sock, debug), debug
         self.start()
     def run(self):
+        lock.aquire()
         while True:
             msg = self.fsock.receivemsg()
             if not msg:
@@ -40,6 +42,7 @@ class ServerThread(Thread):
             ServerThread.requestCount = requestNum + 1
             msg = ("%s! (%d)" % (msg, requestNum)).encode()
             self.fsock.sendmsg(msg)
+        lock.release()
 
 
 while True:
