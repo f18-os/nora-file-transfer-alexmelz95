@@ -62,14 +62,53 @@ class ClientThread(Thread):
 
        fs = FramedStreamSock(s, debug=debug)
 
+       print([f for f in listdir(os.getcwd())])
+       command = ""
+       while not command:
+           command = input("Enter a file name or change a directory: ")
+           args = command.split()
+           if args[0] == "cd":
+               dir = ""
+               newdir = ""
+               dir = os.getcwd()
+               dir = dir.split("/")
+               if(args[1] == ".."):
+                   for i in range(len(dir)-1):
+                       newdir += dir[i]
+                       if i != len(dir)-2:
+                           newdir += "/"
+               else:
+                   newdir = args[1]
+               os.chdir(newdir)
+               onlyfiles = [f for f in listdir(os.getcwd())]
+               print(onlyfiles)
+               command = ""
 
-       print("sending hello world")
-       fs.sendmsg(b"hello world")
-       print("received:", fs.receivemsg())
+           try:
+               inputFile = open(command, "r")
+           except FileNotFoundError:
+               print("File Not Found Error")
+               command = ""
 
-       fs.sendmsg(b"hello world")
-       print("received:", fs.receivemsg())
+           inputText = inputFile.read()
+           if not inputText:
+               print("File is empty. Please use a file with contents.")
+               command = ""
 
-for i in range(100):
-    ClientThread(serverHost, serverPort, debug)
+       #View #1 on Collaboration Report
+       input = bytearray(inputFile, 'utf-8')
+       fs.sendmsg(input)
+       line = f.read(100)
+       while(line):
+           fs.sendmsg(bytearray(line))
+           line = f.read(100)
 
+
+       try:
+           print("Received: ", fs.receivemsg())
+
+       except:
+           print('Error Receiving')
+
+
+       ClientThread(serverHost, serverPort, debug)
