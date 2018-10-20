@@ -39,15 +39,16 @@ class ServerThread(Thread):
                     file = str(self.fsock.receivemsg())[2:-1] #View #2 on Collaboration Report
                     f = open('server_' + file, 'wb+')
                     fileNeeded = False
-                msg = self.fsock.receivemsg()
-                if not msg:
-                    if self.debug: print(self.fsock, "server thread done")
-                    return
-                requestNum = ServerThread.requestCount
-                time.sleep(0.001)
-                ServerThread.requestCount = requestNum + 1
-                msg = ("%s! (%d)" % (msg, requestNum)).encode()
-                self.fsock.sendmsg(msg)
+                else:
+                    msg = self.fsock.receivemsg()
+                    if not msg:
+                        if self.debug: print(self.fsock, "server thread done")
+                        return
+                    requestNum = ServerThread.requestCount
+                    time.sleep(0.001)
+                    ServerThread.requestCount = requestNum + 1
+                    msg = ("%s! (%d)" % (msg, requestNum)).encode()
+                    self.fsock.sendmsg(msg)
             except:
                 f.close()
                 lock.release()
